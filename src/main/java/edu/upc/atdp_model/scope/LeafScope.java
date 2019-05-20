@@ -5,6 +5,7 @@ import edu.upc.atdp_model.fragment.Activity;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -15,10 +16,14 @@ public class LeafScope extends Scope implements Iterable<Activity>, Jsonizable {
     private List<Activity> activities;
     private BranchingScope parent;
 
-    public LeafScope(String id, BranchingScope parent, List<Activity> activities) {
+    public LeafScope(String id, List<Activity> activities) {
         super(id);
-        this.parent = parent;
         this.activities = activities;
+    }
+
+    public LeafScope(String id) {
+        super(id);
+        this.activities = new ArrayList<>();
     }
 
     public List<Activity> getActivities() {
@@ -35,6 +40,14 @@ public class LeafScope extends Scope implements Iterable<Activity>, Jsonizable {
         return activities.iterator();
     }
 
+    public void addActivity(Activity a) {
+        activities.add(a);
+    }
+
+    public void removeActivity(Activity a) {
+        activities.remove(a);
+    }
+
     @Override
     public JSONObject toJson() {
         JSONObject obj = new JSONObject();
@@ -46,5 +59,17 @@ public class LeafScope extends Scope implements Iterable<Activity>, Jsonizable {
         obj.put("activities", activitiesArray);
 
         return obj;
+    }
+
+    @Override
+    public LeafScope findScopeWithActivity(Activity a) {
+        if (activities.contains(a)) return this;
+        else return null;
+    }
+
+    @Override
+    public Scope findScope(String id) {
+        if (getId().equals(id)) return this;
+        else return null;
     }
 }

@@ -58,6 +58,7 @@ public abstract class TemporalConstraint implements Iterable<Activity>, Jsonizab
             case Mandatory: return new Mandatory(id, activities);
             case NonCoOccurrence: return new NonCoOccurrence(id, activities);
             case AlternateResponse: return new AlternateResponse(id, activities);
+            case NonRepeating: return new NonRepeating(id, activities);
             default: throw new IllegalArgumentException("Cannot create temporal constraint of type %s".format(type.toString()));
         }
     }

@@ -1,6 +1,7 @@
 package edu.upc.atdp_model.scope;
 
 import edu.upc.atdp_model.Jsonizable;
+import edu.upc.atdp_model.fragment.Activity;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
@@ -15,9 +16,8 @@ public abstract class BranchingScope extends Scope implements Iterable<Scope>, J
     private Scope parent;
     private List<Scope> children;
 
-    public BranchingScope (String id, Scope parent) {
+    public BranchingScope(String id) {
         super(id);
-        this.parent = parent;
         this.children = new ArrayList<Scope>();
     }
 
@@ -74,17 +74,39 @@ public abstract class BranchingScope extends Scope implements Iterable<Scope>, J
         return obj;
     }
 
-    public static BranchingScope makeBranchingScope (ScopeType type, String id, BranchingScope parent) {
+    public static BranchingScope makeBranchingScope(ScopeType type, String id) {
 
         switch(type) {
             case Inclusive:
-            case Iterating: return new InclusiveScope(id, parent);
-            case Sequential: return new SequentialScope(id, parent);
-            case Conflicting: return new ConflictingScope(id, parent);
-            case Interleaving: return new InterleavingScope(id, parent);
+            case Iterating: return new InclusiveScope(id);
+            case Sequential: return new SequentialScope(id);
+            case Conflicting: return new ConflictingScope(id);
+            case Interleaving: return new InterleavingScope(id);
             default: throw new IllegalArgumentException("Cannot create scope of type %s".format(type.toString()));
         }
 
+    }
+
+    @Override
+    public Scope findScope (String id) {
+        if (getId().equals(id)) {
+            return this;
+        } else {
+            for (Scope c : getChildren()) {
+                Scope found = c.findScope(id);
+                if (found != null) return found;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public LeafScope findScopeWithActivity(Activity a) {
+        for (Scope c : getChildren()) {
+            LeafScope found = c.findScopeWithActivity(a);
+            if (found != null) return found;
+        }
+        return null;
     }
 
 }

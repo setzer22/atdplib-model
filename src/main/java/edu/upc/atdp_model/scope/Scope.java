@@ -1,6 +1,7 @@
 package edu.upc.atdp_model.scope;
 
 import edu.upc.atdp_model.Jsonizable;
+import edu.upc.atdp_model.fragment.Activity;
 
 public abstract class Scope implements Jsonizable {
 
@@ -15,5 +16,8 @@ public abstract class Scope implements Jsonizable {
     }
 
     public abstract ScopeType getType();
+
+    public abstract Scope findScope (String id);
+    public abstract LeafScope findScopeWithActivity (Activity a);
 
 }

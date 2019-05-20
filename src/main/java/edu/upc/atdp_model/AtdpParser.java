@@ -17,7 +17,6 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 import java.util.*;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 public class AtdpParser {
@@ -62,15 +61,14 @@ public class AtdpParser {
         if (leaf) {
             List<Activity> activities = Arrays.stream(((JSONArray) scopeTreeNode.get("activities")).toArray())
                     .map(aId -> (Activity)fragmentsById.get(aId)).collect(Collectors.toList());
-            return new LeafScope(id, null, activities);
+            return new LeafScope(id, activities);
         } else {
             JSONArray childrenArray = (JSONArray)scopeTreeNode.get("children");
             List<Scope> children = Arrays.stream(childrenArray.toArray())
                     .map(c -> parseScopeTree((JSONObject) c, fragmentsById)).collect(Collectors.toList());
             BranchingScope s = BranchingScope.makeBranchingScope(
                     ScopeType.valueOf(scopeTreeNode.get("type").toString()),
-                    id,
-                    null
+                    id
             );
             for (Scope c : children) {
                 s.addChild(c);

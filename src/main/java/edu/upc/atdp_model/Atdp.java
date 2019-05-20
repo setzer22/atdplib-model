@@ -14,6 +14,10 @@ public class Atdp implements Jsonizable {
         this.interpretations = interpretations;
     }
 
+    public List<Interpretation> getInterpretations() {
+        return interpretations;
+    }
+
     @Override
     public JSONObject toJson() {
         JSONObject obj = new JSONObject();

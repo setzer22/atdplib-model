@@ -2,18 +2,22 @@ package edu.upc.atdp_model;
 
 import edu.upc.atdp_model.constraint.TemporalConstraint;
 import edu.upc.atdp_model.constraint.TemporalConstraintType;
+import edu.upc.atdp_model.fragment.Activity;
 import edu.upc.atdp_model.fragment.Fragment;
 import edu.upc.atdp_model.fragment.FragmentType;
 import edu.upc.atdp_model.relation.FragmentRelation;
 import edu.upc.atdp_model.relation.FragmentRelationType;
 import edu.upc.atdp_model.scope.BranchingScope;
+import edu.upc.atdp_model.scope.LeafScope;
 import edu.upc.atdp_model.scope.Scope;
 import edu.upc.atdp_model.scope.ScopeType;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
+import java.time.temporal.Temporal;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Interpretation implements Jsonizable {
 
@@ -80,6 +84,104 @@ public class Interpretation implements Jsonizable {
         }
 
 
+    }
+
+    public Fragment getFragmentById(String id) {
+        return fragmentsById.get(id);
+    }
+
+    public Scope getScopeById(String id) { return this.scopesById.get(id); }
+
+    public TemporalConstraint getTemporalConstraintById(String id) { return this.temporalConstraintsById.get(id); }
+
+    public FragmentRelation getFragmentRelationById(String id) { return this.fragmentRelationsById.get(id); }
+
+    public Stream<FragmentRelation> getOutgoingRelations (Fragment fragment) {
+        return fragmentRelationsById.values().stream().filter(rel -> rel.getSource().equals(fragment));
+    }
+
+    public Stream<FragmentRelation> getIncomingRelations(Fragment fragment) {
+        return fragmentRelationsById.values().stream().filter(rel -> rel.getDestination().equals(fragment));
+    }
+
+    public List<TemporalConstraint> getTemporalConstraints() {
+        return new ArrayList<>(temporalConstraintsById.values());
+    }
+
+    public List<Fragment> getFragments() {
+        return new ArrayList<>(fragmentsById.values());
+    }
+
+    public List<Fragment> getFragmentsWithType(FragmentType ft) {
+        return fragmentsByType.get(ft);
+    }
+
+    public List<TemporalConstraint> getTemporalConstraintsWithType(TemporalConstraintType tt) {
+        return temporalConstraintsByType.get(tt);
+    }
+
+    public List<FragmentRelation> getFragmentRelationsWithType(FragmentRelationType frt) {
+        return fragmentRelationsByType.get(frt);
+    }
+
+    public List<Scope> getScopesWithType(ScopeType st) {
+        return this.scopesByType.get(st);
+    }
+
+    public Scope getScopeTreeRoot() {
+        return this.scopeTreeRoot;
+    }
+
+
+    /** Adds activity {f} to the current interpretation. Activity {f} will belong to
+     * leaf scope represented by {scopeId}. If {f} already existed inside this interpretation
+     * it will be moved.
+     * **/
+    public void addOrMoveActivity(Activity f, String scopeId) {
+
+        LeafScope leafScope = (LeafScope)scopeTreeRoot.findScope(scopeId);
+
+        if (fragmentsById.get(f.getId()) == null) { // Fragment already in I
+            fragmentsById.put(f.getId(), f);
+            fragmentsByType.get(f.getType()).add(f);
+        } else {
+            LeafScope originalScope = (LeafScope)scopeTreeRoot.findScopeWithActivity(f);
+            originalScope.removeActivity(f);
+        }
+
+        leafScope.addActivity(f);
+    }
+
+    /** Adds non-activity fragment {f} to the current interpretation. Use {addOrMoveActivity}
+     * to add fragment activities instead.
+     * **/
+    public void addFragment(Fragment f) {
+        assert (!f.getType().equals(FragmentType.Activity));
+        fragmentsById.put(f.getId(), f);
+        fragmentsByType.get(f.getType()).add(f);
+    }
+
+    public void addTemporalConstraint (TemporalConstraint f) {
+        temporalConstraintsById.put(f.getId(), f);
+        temporalConstraintsByType.get(f.getType()).add(f);
+    }
+
+    public void addFragmentRelation(FragmentRelation f) {
+        fragmentRelationsById.put(f.getId(), f);
+        fragmentRelationsByType.get(f.getType()).add(f);
+    }
+
+    public void removeActivity (Activity a) {
+        LeafScope leafScope = scopeTreeRoot.findScopeWithActivity(a);
+        leafScope.removeActivity(a);
+        fragmentsById.remove(a.getId());
+        fragmentsByType.get(FragmentType.Activity).remove(a);
+    }
+
+    public void removeFragment (Fragment f) {
+        assert (!f.getType().equals(FragmentType.Activity));
+        fragmentsById.remove(f.getId());
+        fragmentsByType.get(f.getType()).remove(f);
     }
 
     @Override
